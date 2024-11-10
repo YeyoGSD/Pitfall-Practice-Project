@@ -21,6 +21,7 @@ func input_movement() -> void:
 	if direction:
 		animated_sprite.flip_h = direction < 0
 		velocity.x = direction * SPEED
+		position.x = clamp(position.x, 0, 480)
 		if is_on_floor():
 			animated_sprite.play("walk")
 	else:
@@ -31,3 +32,6 @@ func input_movement() -> void:
 func _unhandled_key_input(event:InputEvent) ->void:
 	if event.is_action_pressed("jump") and is_on_floor():
 		velocity.y = JUMP_VELOCITY
+
+func _on_visible_on_screen_notifier_screen_exited():
+	position.x = 0
