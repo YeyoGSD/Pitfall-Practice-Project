@@ -1,0 +1,19 @@
+[gd_scene load_steps=3 format=3 uid="uid://digtem6k8b6uh"]
+
+[ext_resource type="Texture2D" uid="uid://ccvbwv0i7vv1x" path="res://stairs/stairs.png" id="1_i0b2c"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_2mrph"]
+size = Vector2(20, 120)
+
+[node name="Stairs" type="Area2D"]
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture_repeat = 2
+position = Vector2(0, -60)
+texture = ExtResource("1_i0b2c")
+region_enabled = true
+region_rect = Rect2(0, 0, 20, 120)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -60)
+shape = SubResource("RectangleShape2D_2mrph")
