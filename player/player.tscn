@@ -1,7 +1,11 @@
-[gd_scene load_steps=9 format=3 uid="uid://g0wesxl3nhl0"]
+[gd_scene load_steps=13 format=3 uid="uid://g0wesxl3nhl0"]
 
 [ext_resource type="Script" uid="uid://b6ahcma7b6h4d" path="res://player/player.gd" id="1_dhhr2"]
 [ext_resource type="Texture2D" uid="uid://c4yfqcuq0jbgp" path="res://player/player.png" id="1_v2osn"]
+[ext_resource type="Script" uid="uid://cpu20c73sgvwg" path="res://addons/godot_state_charts/state_chart.gd" id="3_g6k8r"]
+[ext_resource type="Script" uid="uid://60maj1w40q3a" path="res://addons/godot_state_charts/compound_state.gd" id="4_boad6"]
+[ext_resource type="Script" uid="uid://c53kd3g1eu4ie" path="res://addons/godot_state_charts/transition.gd" id="5_rgyib"]
+[ext_resource type="Script" uid="uid://b4t7gl3c6wj3r" path="res://addons/godot_state_charts/atomic_state.gd" id="6_hg6s5"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_xoqul"]
 atlas = ExtResource("1_v2osn")
@@ -53,8 +57,10 @@ animations = [{
 radius = 5.0
 height = 26.0
 
-[node name="Player" type="CharacterBody2D"]
+[node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("animated_sprite", "state_chart")]
 script = ExtResource("1_dhhr2")
+animated_sprite = NodePath("AnimatedSprite")
+state_chart = NodePath("StateChart")
 
 [node name="AnimatedSprite" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_cu2dm")
@@ -68,4 +74,89 @@ shape = SubResource("CapsuleShape2D_af2ma")
 [node name="VisibleOnScreenNotifier" type="VisibleOnScreenNotifier2D" parent="."]
 rect = Rect2(0, -2.5, 5, 5)
 
+[node name="StateChart" type="Node" parent="."]
+script = ExtResource("3_g6k8r")
+metadata/_custom_type_script = "uid://cpu20c73sgvwg"
+
+[node name="Root" type="Node" parent="StateChart"]
+script = ExtResource("4_boad6")
+initial_state = NodePath("Grounded")
+metadata/_custom_type_script = "uid://60maj1w40q3a"
+
+[node name="Grounded" type="Node" parent="StateChart/Root"]
+script = ExtResource("4_boad6")
+initial_state = NodePath("Idle")
+metadata/_custom_type_script = "uid://60maj1w40q3a"
+
+[node name="ToJump" type="Node" parent="StateChart/Root/Grounded"]
+script = ExtResource("5_rgyib")
+to = NodePath("../../Airborne/Jump")
+event = &"started_jumping"
+delay_in_seconds = "0.0"
+metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
+
+[node name="ToAirborne" type="Node" parent="StateChart/Root/Grounded"]
+script = ExtResource("5_rgyib")
+to = NodePath("../../Airborne")
+event = &"is_on_air"
+delay_in_seconds = "0.0"
+metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
+
+[node name="Idle" type="Node" parent="StateChart/Root/Grounded"]
+script = ExtResource("6_hg6s5")
+metadata/_custom_type_script = "uid://b4t7gl3c6wj3r"
+
+[node name="ToWalking" type="Node" parent="StateChart/Root/Grounded/Idle"]
+script = ExtResource("5_rgyib")
+to = NodePath("../../Walking")
+event = &"started_walking"
+delay_in_seconds = "0.0"
+metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
+
+[node name="Walking" type="Node" parent="StateChart/Root/Grounded"]
+script = ExtResource("6_hg6s5")
+metadata/_custom_type_script = "uid://b4t7gl3c6wj3r"
+
+[node name="ToIdle" type="Node" parent="StateChart/Root/Grounded/Walking"]
+script = ExtResource("5_rgyib")
+to = NodePath("../../Idle")
+event = &"stopped_walking"
+delay_in_seconds = "0.0"
+metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
+
+[node name="Airborne" type="Node" parent="StateChart/Root"]
+script = ExtResource("4_boad6")
+initial_state = NodePath("Falling")
+metadata/_custom_type_script = "uid://60maj1w40q3a"
+
+[node name="Jump" type="Node" parent="StateChart/Root/Airborne"]
+script = ExtResource("6_hg6s5")
+metadata/_custom_type_script = "uid://b4t7gl3c6wj3r"
+
+[node name="ToFalling" type="Node" parent="StateChart/Root/Airborne/Jump"]
+script = ExtResource("5_rgyib")
+to = NodePath("../../Falling")
+event = &"started_falling"
+delay_in_seconds = "0.0"
+metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
+
+[node name="Falling" type="Node" parent="StateChart/Root/Airborne"]
+script = ExtResource("6_hg6s5")
+metadata/_custom_type_script = "uid://b4t7gl3c6wj3r"
+
+[node name="ToGrounded" type="Node" parent="StateChart/Root/Airborne/Falling"]
+script = ExtResource("5_rgyib")
+to = NodePath("../../../Grounded")
+event = &"stopped_falling"
+delay_in_seconds = "0.0"
+metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
+
 [connection signal="screen_exited" from="VisibleOnScreenNotifier" to="." method="_on_visible_on_screen_notifier_screen_exited"]
+[connection signal="state_processing" from="StateChart/Root/Grounded" to="." method="_on_grounded_state_processing"]
+[connection signal="state_unhandled_input" from="StateChart/Root/Grounded" to="." method="_on_grounded_state_unhandled_input"]
+[connection signal="state_entered" from="StateChart/Root/Grounded/Idle" to="." method="_on_idle_state_entered"]
+[connection signal="state_entered" from="StateChart/Root/Grounded/Walking" to="." method="_on_walking_state_entered"]
+[connection signal="state_physics_processing" from="StateChart/Root/Airborne" to="." method="_on_airborne_state_physics_processing"]
+[connection signal="state_entered" from="StateChart/Root/Airborne/Jump" to="." method="_on_jump_state_entered"]
+[connection signal="state_physics_processing" from="StateChart/Root/Airborne/Jump" to="." method="_on_jump_state_physics_processing"]
+[connection signal="state_physics_processing" from="StateChart/Root/Airborne/Falling" to="." method="_on_falling_state_physics_processing"]
