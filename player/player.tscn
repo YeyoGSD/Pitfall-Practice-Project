@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://g0wesxl3nhl0"]
+[gd_scene load_steps=16 format=3 uid="uid://g0wesxl3nhl0"]
 
 [ext_resource type="Script" uid="uid://b6ahcma7b6h4d" path="res://player/player.gd" id="1_dhhr2"]
 [ext_resource type="Texture2D" uid="uid://c4yfqcuq0jbgp" path="res://player/player.png" id="1_v2osn"]
@@ -6,6 +6,18 @@
 [ext_resource type="Script" uid="uid://60maj1w40q3a" path="res://addons/godot_state_charts/compound_state.gd" id="4_boad6"]
 [ext_resource type="Script" uid="uid://c53kd3g1eu4ie" path="res://addons/godot_state_charts/transition.gd" id="5_rgyib"]
 [ext_resource type="Script" uid="uid://b4t7gl3c6wj3r" path="res://addons/godot_state_charts/atomic_state.gd" id="6_hg6s5"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_g6k8r"]
+atlas = ExtResource("1_v2osn")
+region = Rect2(59, 0, 18, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_boad6"]
+atlas = ExtResource("1_v2osn")
+region = Rect2(77, 0, 18, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rgyib"]
+atlas = ExtResource("1_v2osn")
+region = Rect2(95, 0, 18, 32)
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_xoqul"]
 atlas = ExtResource("1_v2osn")
@@ -27,10 +39,32 @@ region = Rect2(19, 0, 19, 32)
 animations = [{
 "frames": [{
 "duration": 1.0,
+"texture": SubResource("AtlasTexture_g6k8r")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_boad6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rgyib")
+}],
+"loop": true,
+"name": &"climb",
+"speed": 7.0
+}, {
+"frames": [{
+"duration": 1.0,
 "texture": SubResource("AtlasTexture_xoqul")
 }],
 "loop": false,
 "name": &"idle",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_g6k8r")
+}],
+"loop": true,
+"name": &"idle_climb",
 "speed": 5.0
 }, {
 "frames": [{
@@ -64,8 +98,10 @@ state_chart = NodePath("StateChart")
 
 [node name="AnimatedSprite" type="AnimatedSprite2D" parent="."]
 sprite_frames = SubResource("SpriteFrames_cu2dm")
-animation = &"walk"
+animation = &"climb"
 autoplay = "idle"
+frame = 2
+frame_progress = 0.91776
 
 [node name="CollisionShape" type="CollisionShape2D" parent="."]
 position = Vector2(0, 3)
@@ -102,6 +138,13 @@ event = &"is_on_air"
 delay_in_seconds = "0.0"
 metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
 
+[node name="ToClimbing" type="Node" parent="StateChart/Root/Grounded"]
+script = ExtResource("5_rgyib")
+to = NodePath("../../Climbing")
+event = &"started_climbing"
+delay_in_seconds = "0.0"
+metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
+
 [node name="Idle" type="Node" parent="StateChart/Root/Grounded"]
 script = ExtResource("6_hg6s5")
 metadata/_custom_type_script = "uid://b4t7gl3c6wj3r"
@@ -129,6 +172,13 @@ script = ExtResource("4_boad6")
 initial_state = NodePath("Falling")
 metadata/_custom_type_script = "uid://60maj1w40q3a"
 
+[node name="ToClimbing" type="Node" parent="StateChart/Root/Airborne"]
+script = ExtResource("5_rgyib")
+to = NodePath("../../Climbing")
+event = &"started_climbing"
+delay_in_seconds = "0.0"
+metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
+
 [node name="Jump" type="Node" parent="StateChart/Root/Airborne"]
 script = ExtResource("6_hg6s5")
 metadata/_custom_type_script = "uid://b4t7gl3c6wj3r"
@@ -147,7 +197,25 @@ metadata/_custom_type_script = "uid://b4t7gl3c6wj3r"
 [node name="ToGrounded" type="Node" parent="StateChart/Root/Airborne/Falling"]
 script = ExtResource("5_rgyib")
 to = NodePath("../../../Grounded")
-event = &"stopped_falling"
+event = &"is_on_ground"
+delay_in_seconds = "0.0"
+metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
+
+[node name="Climbing" type="Node" parent="StateChart/Root"]
+script = ExtResource("6_hg6s5")
+metadata/_custom_type_script = "uid://b4t7gl3c6wj3r"
+
+[node name="ToJump" type="Node" parent="StateChart/Root/Climbing"]
+script = ExtResource("5_rgyib")
+to = NodePath("../../Airborne/Jump")
+event = &"started_jumping"
+delay_in_seconds = "0.0"
+metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
+
+[node name="ToGrounded" type="Node" parent="StateChart/Root/Climbing"]
+script = ExtResource("5_rgyib")
+to = NodePath("../../Grounded")
+event = &"is_on_ground"
 delay_in_seconds = "0.0"
 metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
 
@@ -159,4 +227,7 @@ metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
 [connection signal="state_physics_processing" from="StateChart/Root/Airborne" to="." method="_on_airborne_state_physics_processing"]
 [connection signal="state_entered" from="StateChart/Root/Airborne/Jump" to="." method="_on_jump_state_entered"]
 [connection signal="state_physics_processing" from="StateChart/Root/Airborne/Jump" to="." method="_on_jump_state_physics_processing"]
+[connection signal="state_entered" from="StateChart/Root/Airborne/Falling" to="." method="_on_falling_state_entered"]
 [connection signal="state_physics_processing" from="StateChart/Root/Airborne/Falling" to="." method="_on_falling_state_physics_processing"]
+[connection signal="state_entered" from="StateChart/Root/Climbing" to="." method="_on_climbing_state_entered"]
+[connection signal="state_unhandled_input" from="StateChart/Root/Climbing" to="." method="_on_climbing_state_unhandled_input"]

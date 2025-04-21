@@ -1,5 +1,7 @@
 extends Node
 
-const JUMP:String = "jump"
-const WALK:String = "walk"
-const IDLE:String = "idle"
+const JUMP := "jump"
+const WALK := "walk"
+const IDLE := "idle"
+const CLIMB := "climb"
+const IDLE_CLIMB := "idle_climb"
