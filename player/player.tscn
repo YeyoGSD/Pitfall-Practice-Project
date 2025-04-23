@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://g0wesxl3nhl0"]
+[gd_scene load_steps=18 format=3 uid="uid://g0wesxl3nhl0"]
 
 [ext_resource type="Script" uid="uid://b6ahcma7b6h4d" path="res://player/player.gd" id="1_dhhr2"]
 [ext_resource type="Texture2D" uid="uid://c4yfqcuq0jbgp" path="res://player/player.png" id="1_v2osn"]
@@ -91,6 +91,12 @@ animations = [{
 radius = 5.0
 height = 26.0
 
+[sub_resource type="CircleShape2D" id="CircleShape2D_g6k8r"]
+radius = 13.0384
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_boad6"]
+radius = 9.0
+
 [node name="Player" type="CharacterBody2D" node_paths=PackedStringArray("animated_sprite", "state_chart")]
 script = ExtResource("1_dhhr2")
 animated_sprite = NodePath("AnimatedSprite")
@@ -116,118 +122,156 @@ metadata/_custom_type_script = "uid://cpu20c73sgvwg"
 
 [node name="Root" type="Node" parent="StateChart"]
 script = ExtResource("4_boad6")
+initial_state = NodePath("Gravity")
+metadata/_custom_type_script = "uid://60maj1w40q3a"
+
+[node name="Gravity" type="Node" parent="StateChart/Root"]
+script = ExtResource("4_boad6")
 initial_state = NodePath("Grounded")
 metadata/_custom_type_script = "uid://60maj1w40q3a"
 
-[node name="Grounded" type="Node" parent="StateChart/Root"]
+[node name="Grounded" type="Node" parent="StateChart/Root/Gravity"]
 script = ExtResource("4_boad6")
 initial_state = NodePath("Idle")
 metadata/_custom_type_script = "uid://60maj1w40q3a"
 
-[node name="ToJump" type="Node" parent="StateChart/Root/Grounded"]
+[node name="ToJump" type="Node" parent="StateChart/Root/Gravity/Grounded"]
 script = ExtResource("5_rgyib")
 to = NodePath("../../Airborne/Jump")
 event = &"started_jumping"
 delay_in_seconds = "0.0"
 metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
 
-[node name="ToAirborne" type="Node" parent="StateChart/Root/Grounded"]
+[node name="ToAirborne" type="Node" parent="StateChart/Root/Gravity/Grounded"]
 script = ExtResource("5_rgyib")
 to = NodePath("../../Airborne")
 event = &"is_on_air"
 delay_in_seconds = "0.0"
 metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
 
-[node name="ToClimbing" type="Node" parent="StateChart/Root/Grounded"]
-script = ExtResource("5_rgyib")
-to = NodePath("../../Climbing")
-event = &"started_climbing"
-delay_in_seconds = "0.0"
-metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
-
-[node name="Idle" type="Node" parent="StateChart/Root/Grounded"]
+[node name="Idle" type="Node" parent="StateChart/Root/Gravity/Grounded"]
 script = ExtResource("6_hg6s5")
 metadata/_custom_type_script = "uid://b4t7gl3c6wj3r"
 
-[node name="ToWalking" type="Node" parent="StateChart/Root/Grounded/Idle"]
+[node name="ToWalking" type="Node" parent="StateChart/Root/Gravity/Grounded/Idle"]
 script = ExtResource("5_rgyib")
 to = NodePath("../../Walking")
 event = &"started_walking"
 delay_in_seconds = "0.0"
 metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
 
-[node name="Walking" type="Node" parent="StateChart/Root/Grounded"]
+[node name="Walking" type="Node" parent="StateChart/Root/Gravity/Grounded"]
 script = ExtResource("6_hg6s5")
 metadata/_custom_type_script = "uid://b4t7gl3c6wj3r"
 
-[node name="ToIdle" type="Node" parent="StateChart/Root/Grounded/Walking"]
+[node name="ToIdle" type="Node" parent="StateChart/Root/Gravity/Grounded/Walking"]
 script = ExtResource("5_rgyib")
 to = NodePath("../../Idle")
 event = &"stopped_walking"
 delay_in_seconds = "0.0"
 metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
 
-[node name="Airborne" type="Node" parent="StateChart/Root"]
+[node name="Airborne" type="Node" parent="StateChart/Root/Gravity"]
 script = ExtResource("4_boad6")
 initial_state = NodePath("Falling")
 metadata/_custom_type_script = "uid://60maj1w40q3a"
 
-[node name="ToClimbing" type="Node" parent="StateChart/Root/Airborne"]
-script = ExtResource("5_rgyib")
-to = NodePath("../../Climbing")
-event = &"started_climbing"
-delay_in_seconds = "0.0"
-metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
-
-[node name="Jump" type="Node" parent="StateChart/Root/Airborne"]
+[node name="Jump" type="Node" parent="StateChart/Root/Gravity/Airborne"]
 script = ExtResource("6_hg6s5")
 metadata/_custom_type_script = "uid://b4t7gl3c6wj3r"
 
-[node name="ToFalling" type="Node" parent="StateChart/Root/Airborne/Jump"]
+[node name="ToFalling" type="Node" parent="StateChart/Root/Gravity/Airborne/Jump"]
 script = ExtResource("5_rgyib")
 to = NodePath("../../Falling")
 event = &"started_falling"
 delay_in_seconds = "0.0"
 metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
 
-[node name="Falling" type="Node" parent="StateChart/Root/Airborne"]
+[node name="Falling" type="Node" parent="StateChart/Root/Gravity/Airborne"]
 script = ExtResource("6_hg6s5")
 metadata/_custom_type_script = "uid://b4t7gl3c6wj3r"
 
-[node name="ToGrounded" type="Node" parent="StateChart/Root/Airborne/Falling"]
+[node name="ToGrounded" type="Node" parent="StateChart/Root/Gravity/Airborne/Falling"]
 script = ExtResource("5_rgyib")
 to = NodePath("../../../Grounded")
 event = &"is_on_ground"
 delay_in_seconds = "0.0"
 metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
 
-[node name="Climbing" type="Node" parent="StateChart/Root"]
-script = ExtResource("6_hg6s5")
-metadata/_custom_type_script = "uid://b4t7gl3c6wj3r"
-
-[node name="ToJump" type="Node" parent="StateChart/Root/Climbing"]
+[node name="ToClimbing" type="Node" parent="StateChart/Root/Gravity"]
 script = ExtResource("5_rgyib")
-to = NodePath("../../Airborne/Jump")
+to = NodePath("../../NoGravity/Climbing")
+event = &"is_climbing"
+delay_in_seconds = "0.0"
+metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
+
+[node name="ToSwinging" type="Node" parent="StateChart/Root/Gravity"]
+script = ExtResource("5_rgyib")
+to = NodePath("../../NoGravity/Swinging")
+event = &"is_swinging"
+delay_in_seconds = "0.0"
+metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
+
+[node name="NoGravity" type="Node" parent="StateChart/Root"]
+script = ExtResource("4_boad6")
+initial_state = NodePath("Climbing")
+metadata/_custom_type_script = "uid://60maj1w40q3a"
+
+[node name="ToGravity" type="Node" parent="StateChart/Root/NoGravity"]
+script = ExtResource("5_rgyib")
+to = NodePath("../../Gravity")
+event = &"has_gravity"
+delay_in_seconds = "0.0"
+metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
+
+[node name="ToJump" type="Node" parent="StateChart/Root/NoGravity"]
+script = ExtResource("5_rgyib")
+to = NodePath("../../Gravity/Airborne/Jump")
 event = &"started_jumping"
 delay_in_seconds = "0.0"
 metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
 
-[node name="ToGrounded" type="Node" parent="StateChart/Root/Climbing"]
-script = ExtResource("5_rgyib")
-to = NodePath("../../Grounded")
-event = &"is_on_ground"
-delay_in_seconds = "0.0"
-metadata/_custom_type_script = "uid://c53kd3g1eu4ie"
+[node name="Climbing" type="Node" parent="StateChart/Root/NoGravity"]
+script = ExtResource("6_hg6s5")
+metadata/_custom_type_script = "uid://b4t7gl3c6wj3r"
+
+[node name="Swinging" type="Node" parent="StateChart/Root/NoGravity"]
+script = ExtResource("6_hg6s5")
+metadata/_custom_type_script = "uid://b4t7gl3c6wj3r"
+
+[node name="RopeArea" type="Area2D" parent="."]
+position = Vector2(-2, 4)
+collision_layer = 4
+collision_mask = 4
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="RopeArea"]
+position = Vector2(2, -4)
+shape = SubResource("CircleShape2D_g6k8r")
+
+[node name="LadderArea" type="Area2D" parent="."]
+visible = false
+collision_layer = 2
+collision_mask = 2
+
+[node name="CollisionShape" type="CollisionShape2D" parent="LadderArea"]
+shape = SubResource("CircleShape2D_boad6")
 
 [connection signal="screen_exited" from="VisibleOnScreenNotifier" to="." method="_on_visible_on_screen_notifier_screen_exited"]
-[connection signal="state_processing" from="StateChart/Root/Grounded" to="." method="_on_grounded_state_processing"]
-[connection signal="state_unhandled_input" from="StateChart/Root/Grounded" to="." method="_on_grounded_state_unhandled_input"]
-[connection signal="state_entered" from="StateChart/Root/Grounded/Idle" to="." method="_on_idle_state_entered"]
-[connection signal="state_entered" from="StateChart/Root/Grounded/Walking" to="." method="_on_walking_state_entered"]
-[connection signal="state_physics_processing" from="StateChart/Root/Airborne" to="." method="_on_airborne_state_physics_processing"]
-[connection signal="state_entered" from="StateChart/Root/Airborne/Jump" to="." method="_on_jump_state_entered"]
-[connection signal="state_physics_processing" from="StateChart/Root/Airborne/Jump" to="." method="_on_jump_state_physics_processing"]
-[connection signal="state_entered" from="StateChart/Root/Airborne/Falling" to="." method="_on_falling_state_entered"]
-[connection signal="state_physics_processing" from="StateChart/Root/Airborne/Falling" to="." method="_on_falling_state_physics_processing"]
-[connection signal="state_entered" from="StateChart/Root/Climbing" to="." method="_on_climbing_state_entered"]
-[connection signal="state_unhandled_input" from="StateChart/Root/Climbing" to="." method="_on_climbing_state_unhandled_input"]
+[connection signal="state_physics_processing" from="StateChart/Root/Gravity" to="." method="_on_gravity_state_physics_processing"]
+[connection signal="state_processing" from="StateChart/Root/Gravity/Grounded" to="." method="_on_grounded_state_processing"]
+[connection signal="state_unhandled_input" from="StateChart/Root/Gravity/Grounded" to="." method="_on_grounded_state_unhandled_input"]
+[connection signal="state_entered" from="StateChart/Root/Gravity/Grounded/Idle" to="." method="_on_idle_state_entered"]
+[connection signal="state_physics_processing" from="StateChart/Root/Gravity/Grounded/Idle" to="." method="_on_idle_state_physics_processing"]
+[connection signal="state_entered" from="StateChart/Root/Gravity/Grounded/Walking" to="." method="_on_walking_state_entered"]
+[connection signal="state_physics_processing" from="StateChart/Root/Gravity/Grounded/Walking" to="." method="_on_walking_state_physics_processing"]
+[connection signal="state_entered" from="StateChart/Root/Gravity/Airborne/Jump" to="." method="_on_jump_state_entered"]
+[connection signal="state_physics_processing" from="StateChart/Root/Gravity/Airborne/Jump" to="." method="_on_jump_state_physics_processing"]
+[connection signal="state_entered" from="StateChart/Root/Gravity/Airborne/Falling" to="." method="_on_falling_state_entered"]
+[connection signal="state_physics_processing" from="StateChart/Root/Gravity/Airborne/Falling" to="." method="_on_falling_state_physics_processing"]
+[connection signal="state_entered" from="StateChart/Root/NoGravity" to="." method="_on_no_gravity_state_entered"]
+[connection signal="state_unhandled_input" from="StateChart/Root/NoGravity" to="." method="_on_no_gravity_state_unhandled_input"]
+[connection signal="state_unhandled_input" from="StateChart/Root/NoGravity/Climbing" to="." method="_on_climbing_state_unhandled_input"]
+[connection signal="area_entered" from="RopeArea" to="." method="_on_rope_area_area_entered"]
+[connection signal="area_exited" from="RopeArea" to="." method="_on_rope_area_area_exited"]
+[connection signal="area_entered" from="LadderArea" to="." method="_on_ladder_area_area_entered"]
+[connection signal="area_exited" from="LadderArea" to="." method="_on_ladder_area_area_exited"]

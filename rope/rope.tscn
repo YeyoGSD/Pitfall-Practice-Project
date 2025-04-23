@@ -1,0 +1,32 @@
+[gd_scene load_steps=5 format=3 uid="uid://coni5lh2mxj5b"]
+
+[ext_resource type="Script" uid="uid://bcj30ya8y5x72" path="res://rope/rope.gd" id="1_macth"]
+
+[sub_resource type="Gradient" id="Gradient_macth"]
+colors = PackedColorArray(0, 0.2, 0, 1, 0, 0.2, 0, 1)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_8ngbo"]
+gradient = SubResource("Gradient_macth")
+width = 10
+height = 80
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_macth"]
+
+[node name="AnchorPoint" type="Marker2D" node_paths=PackedStringArray("hook_area")]
+script = ExtResource("1_macth")
+hook_area = NodePath("Sprite/HookArea")
+
+[node name="Sprite" type="Sprite2D" parent="."]
+position = Vector2(0, 40)
+texture = SubResource("GradientTexture2D_8ngbo")
+
+[node name="HookArea" type="Area2D" parent="Sprite"]
+position = Vector2(0, 35)
+collision_layer = 4
+collision_mask = 4
+
+[node name="CollisionShape" type="CollisionShape2D" parent="Sprite/HookArea"]
+shape = SubResource("CircleShape2D_macth")
+
+[connection signal="area_entered" from="Sprite/HookArea" to="." method="_on_hook_area_area_entered"]
+[connection signal="area_exited" from="Sprite/HookArea" to="." method="_on_hook_area_area_exited"]

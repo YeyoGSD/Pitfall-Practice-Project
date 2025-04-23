@@ -12,19 +12,42 @@ var direction := 0.0
 func _physics_process(_delta:float) -> void:
 	if signf(velocity.x) != 0:
 		animated_sprite.flip_h = velocity.x < 0
-	
 	direction = Input.get_axis("move_left", "move_right")
 	if direction:
-		state_chart.send_event(PLAYER_STATES.STARTED_WALKING)
 		velocity.x = direction * SPEED
-		position.x = clampf(position.x, 0, 480)
 	else:
-		state_chart.send_event(PLAYER_STATES.STOPPED_WALKING)
 		velocity.x = move_toward(velocity.x, 0, SPEED)
 	move_and_slide()
 
 func _on_visible_on_screen_notifier_screen_exited():
 	position.x = 0
+
+#region Gravity state
+func _on_ladder_area_area_entered(_area: Area2D) -> void:
+	state_chart.send_event(PLAYER_STATES.IS_CLIMBING)
+
+func _on_rope_area_area_entered(_area: Area2D) -> void:
+	state_chart.send_event(PLAYER_STATES.IS_SWINGING)
+
+func _on_gravity_state_physics_processing(delta: float) -> void:
+	velocity += get_gravity() * delta
+#endregion
+
+#region NoGravity state
+func _on_rope_area_area_exited(_area: Area2D) -> void:
+	state_chart.send_event(PLAYER_STATES.HAS_GRAVITY)
+
+func _on_ladder_area_area_exited(_area: Area2D) -> void:
+	state_chart.send_event(PLAYER_STATES.HAS_GRAVITY)
+
+func _on_no_gravity_state_entered() -> void:
+	animated_sprite.play(PLAYER_ANIMATIONS.IDLE_CLIMB)
+	velocity = Vector2.ZERO
+
+func _on_no_gravity_state_unhandled_input(event: InputEvent) -> void:
+	if event.is_action("jump"):
+		state_chart.send_event(PLAYER_STATES.STARTED_JUMPING)
+#endregion
 
 #region Grounded state 
 func _on_grounded_state_processing(_delta: float) -> void:
@@ -45,11 +68,6 @@ func _on_jump_state_physics_processing(_delta: float) -> void:
 		state_chart.send_event(PLAYER_STATES.STARTED_FALLING)
 #endregion
 
-#region Airborne state
-func _on_airborne_state_physics_processing(delta: float) -> void:
-	velocity += get_gravity() * delta
-#endregion
-
 #region Falling state
 func _on_falling_state_entered() -> void:
 	animated_sprite.play(PLAYER_ANIMATIONS.JUMP)
@@ -62,22 +80,24 @@ func _on_falling_state_physics_processing(_delta: float) -> void:
 #region Idle state
 func _on_idle_state_entered() -> void:
 	animated_sprite.play(PLAYER_ANIMATIONS.IDLE)
+
+func _on_idle_state_physics_processing(_delta: float) -> void:
+	if direction:
+		state_chart.send_event(PLAYER_STATES.STARTED_WALKING)
 #endregion
 
 #region Walking state
 func _on_walking_state_entered() -> void:
 	animated_sprite.play(PLAYER_ANIMATIONS.WALK)
+
+func _on_walking_state_physics_processing(_delta: float) -> void:
+	if not direction:
+		state_chart.send_event(PLAYER_STATES.STOPPED_WALKING)
 #endregion
 
 #region Climbing state
-func _on_climbing_state_entered() -> void:
-	animated_sprite.play(PLAYER_ANIMATIONS.IDLE_CLIMB)
-
 func _on_climbing_state_unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("climb"):
 		animated_sprite.play(PLAYER_ANIMATIONS.CLIMB)
 		velocity.y = CLIMBING_VELOCITY
-	if event.is_action("jump"):
-		state_chart.send_event(PLAYER_STATES.STARTED_JUMPING)
 #endregion
- 
