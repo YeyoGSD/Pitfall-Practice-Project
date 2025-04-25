@@ -11,11 +11,11 @@ collision_mask = 2
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
 texture_repeat = 2
-position = Vector2(0, -60)
+position = Vector2(0, 60)
 texture = ExtResource("1_i0b2c")
 region_enabled = true
 region_rect = Rect2(0, 0, 20, 120)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, -60)
+position = Vector2(0, 60)
 shape = SubResource("RectangleShape2D_2mrph")
